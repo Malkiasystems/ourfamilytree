@@ -144,3 +144,111 @@
   color: var(--c-text-muted);
   font-style: italic;
 }
+
+/* ── PHOTOS ── */
+.photos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.photos-header .profile-section-title { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+.photos-upload-btn { cursor: pointer; }
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .photos-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+
+.photo-card {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.photo-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--c-gold);
+  transform: translateY(-2px);
+}
+
+.photo-img-wrap {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--c-cream);
+}
+.photo-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.photo-card:hover .photo-img-wrap img {
+  transform: scale(1.05);
+}
+
+.photo-caption {
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+}
+.photo-caption-text {
+  font-size: 0.78rem;
+  color: var(--c-text-secondary);
+  line-height: 1.3;
+  flex: 1;
+}
+.photo-caption-year {
+  font-size: 0.7rem;
+  color: var(--c-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ── LIGHTBOX ── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  animation: fadeIn 0.2s ease;
+  cursor: pointer;
+}
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 301;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.25); }
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  cursor: default;
+  animation: modalIn 0.25s ease;
+}
