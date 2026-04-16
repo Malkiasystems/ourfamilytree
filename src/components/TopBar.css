@@ -1,0 +1,79 @@
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--c-earth);
+  border-bottom: 1px solid rgba(200,169,110,0.15);
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+}
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+}
+.topbar-brand-icon { color: var(--c-gold); }
+.topbar-brand-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--c-parchment);
+  letter-spacing: 0.02em;
+}
+.topbar-brand-sub {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: var(--c-sand);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-top: -2px;
+  display: block;
+}
+.topbar-nav { display: flex; align-items: center; gap: 4px; }
+.topbar-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: none; border: none;
+  color: var(--c-sand);
+  font-family: var(--font-body);
+  font-size: 0.8rem; font-weight: 500;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.topbar-btn:hover { background: rgba(200,169,110,0.1); color: var(--c-parchment); }
+.topbar-btn.active { background: rgba(200,169,110,0.15); color: var(--c-gold); }
+.topbar-btn svg { opacity: 0.7; }
+.topbar-btn.active svg { opacity: 1; }
+.topbar-btn-add { color: var(--c-gold); }
+.topbar-btn-label { display: none; }
+
+@media (min-width: 768px) {
+  .topbar-btn-label { display: inline; }
+  .topbar { padding: 0 32px; }
+}
+
+.mobile-menu-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  background: none; border: none;
+  color: var(--c-sand); cursor: pointer;
+  border-radius: var(--radius);
+}
+.mobile-menu-btn:hover { background: rgba(200,169,110,0.1); }
+@media (min-width: 768px) { .mobile-menu-btn { display: none; } }
+@media (max-width: 767px) { .topbar-nav.desktop { display: none; } }
+
+.mobile-nav {
+  position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+  background: var(--c-earth); z-index: 99;
+  display: flex; flex-direction: column;
+  padding: 16px;
+  animation: slideDown 0.2s ease;
+}
+.mobile-nav .topbar-btn {
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  justify-content: flex-start;
+}
+.mobile-nav .topbar-btn-label { display: inline; }

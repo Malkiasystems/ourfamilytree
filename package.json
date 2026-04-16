@@ -1,0 +1,26 @@
+{
+  "name": "koo-heritage",
+  "version": "1.0.0",
+  "description": "A clan-based family tree and digital heritage platform for preserving family history across generations.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "@supabase/supabase-js": "^2.38.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0",
+    "typescript": "^5.3.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/node": "^20.10.0"
+  }
+}

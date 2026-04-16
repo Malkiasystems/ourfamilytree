@@ -1,0 +1,22 @@
+.main {
+  padding-top: 56px;
+  min-height: 100vh;
+}
+
+.footer {
+  background: var(--c-earth);
+  padding: 32px 20px;
+  text-align: center;
+  margin-top: 48px;
+}
+.footer-motto {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--c-gold);
+  margin-bottom: 8px;
+}
+.footer-text {
+  font-size: 0.78rem;
+  color: var(--c-sand);
+}

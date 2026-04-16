@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+
+:root {
+  --c-earth: #2C1810;
+  --c-bark: #3D2914;
+  --c-soil: #4A3520;
+  --c-clay: #6B4C35;
+  --c-sand: #B8976A;
+  --c-parchment: #F4EDE4;
+  --c-cream: #FAF7F2;
+  --c-white: #FEFDFB;
+  --c-gold: #C8A96E;
+  --c-gold-dim: #A68B52;
+  --c-accent: #8B6914;
+  --c-rust: #9B4F3A;
+  --c-sage: #6B7E5E;
+  --c-text: #1A1208;
+  --c-text-secondary: #5C4E3C;
+  --c-text-muted: #8B7D6B;
+  --c-border: #E2D9CC;
+  --c-border-light: #EDE7DE;
+  --c-male: #4A6B8A;
+  --c-female: #8A5A6B;
+  --c-overlay: rgba(44, 24, 16, 0.85);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 1px 3px rgba(44,24,16,0.06);
+  --shadow-md: 0 4px 12px rgba(44,24,16,0.08);
+  --shadow-lg: 0 8px 32px rgba(44,24,16,0.12);
+  --shadow-xl: 0 16px 48px rgba(44,24,16,0.16);
+  --transition: 0.2s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: var(--font-body);
+  color: var(--c-text);
+  background: var(--c-cream);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-clay); }
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }

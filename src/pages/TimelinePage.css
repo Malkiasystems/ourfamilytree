@@ -1,0 +1,52 @@
+.timeline-filters {
+  display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.timeline-filter {
+  padding: 5px 14px; font-size: 0.78rem;
+  font-family: var(--font-body);
+  border: 1px solid var(--c-border);
+  background: var(--c-white);
+  border-radius: 20px; cursor: pointer;
+  transition: var(--transition);
+  color: var(--c-text-secondary);
+}
+.timeline-filter:hover { border-color: var(--c-clay); }
+.timeline-filter.active {
+  background: var(--c-earth);
+  color: var(--c-parchment);
+  border-color: var(--c-earth);
+}
+.timeline-container {
+  position: relative; padding-left: 32px;
+}
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 0; bottom: 0;
+  width: 2px; background: var(--c-border);
+}
+.timeline-item {
+  position: relative; padding-bottom: 24px;
+}
+.timeline-dot {
+  position: absolute;
+  left: -27px; top: 4px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--c-white);
+  z-index: 1;
+}
+.timeline-dot.birth { background: var(--c-sage); }
+.timeline-dot.death { background: var(--c-rust); }
+.timeline-dot.marriage { background: var(--c-gold); }
+.timeline-dot.milestone { background: var(--c-male); }
+.timeline-year {
+  font-family: var(--font-display);
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--c-gold-dim); margin-bottom: 2px;
+}
+.timeline-title { font-size: 0.88rem; color: var(--c-text); }
+.timeline-person {
+  font-size: 0.75rem; color: var(--c-text-muted); cursor: pointer;
+}
+.timeline-person:hover { color: var(--c-gold-dim); }
