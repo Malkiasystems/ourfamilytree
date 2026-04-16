@@ -5,7 +5,6 @@ import {
   fetchAnnouncements, postAnnouncement,
   computeFamilyStats, getDidYouKnow,
 } from '@/data/api';
-import type { AnnouncementRecord } from '@/data/api';
 import { useAsync } from '@/lib/useAsync';
 import type { PageId } from '@/types';
 import './HomePage.css';
@@ -20,8 +19,8 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
   const { data: clans } = useAsync(fetchClans, []);
   const { data: stories } = useAsync(fetchStories, []);
   const { data: proverbs } = useAsync(fetchProverbs, []);
-  const { data: announcements, loading: annLoading } = useAsync(fetchAnnouncements, []);
   const [annRefresh, setAnnRefresh] = useState(0);
+  const { data: announcements } = useAsync(fetchAnnouncements, [], [annRefresh]);
   const [showAnnForm, setShowAnnForm] = useState(false);
   const [annForm, setAnnForm] = useState({ title: '', content: '', type: 'general', author: '' });
   const [postingAnn, setPostingAnn] = useState(false);
@@ -41,6 +40,7 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
   };
 
   const annTypeLabel: Record<string, string> = { birth: 'Birth', wedding: 'Wedding', funeral: 'Funeral', reunion: 'Reunion', achievement: 'Achievement', general: 'General' };
+  const hasHighlights = didYouKnow || stats.oldestLiving || stats.mostChildren.person || stats.youngest;
 
   return (
     <>
@@ -68,44 +68,53 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
         </div>
       </div>
 
-      {loading ? <div className="section"><LoadingState text="Loading..." /></div> : people.length === 0 ? (
-        <div className="section"><EmptyState icon="tree" title="Your family tree starts here" description="Add your first family member." action={<button className="btn btn-primary" onClick={onAddPerson}><Icons.plus size={16} /> Add the first person</button>} /></div>
-      ) : (
+      {loading ? <div className="section"><LoadingState text="Loading..." /></div> : (
         <>
-          {/* DID YOU KNOW + FAMILY HIGHLIGHTS */}
-          <div className="section">
-            <div className="highlights-row">
-              {didYouKnow && (
-                <div className="highlight-card dyk">
-                  <div className="highlight-label">Did You Know?</div>
-                  <div className="highlight-text">{didYouKnow}</div>
+          {/* HIGHLIGHTS (show whatever is available) */}
+          {hasHighlights && (
+            <div className="section">
+              <div className="section-header">
+                <h2 className="section-title"><Icons.star size={20} /> Family Highlights</h2>
+              </div>
+              <div className="highlights-row">
+                {didYouKnow && (
+                  <div className="highlight-card dyk">
+                    <div className="highlight-label">Did You Know?</div>
+                    <div className="highlight-text">{didYouKnow}</div>
+                  </div>
+                )}
+                {stats.mostChildren.person && (
+                  <div className="highlight-card" onClick={() => onNavigate('profile', stats.mostChildren.person!.id)}>
+                    <div className="highlight-label">Most Children</div>
+                    <div className="highlight-text">{stats.mostChildren.person.firstName} {stats.mostChildren.person.lastName}</div>
+                    <div className="highlight-sub">{stats.mostChildren.count} children</div>
+                  </div>
+                )}
+                {stats.oldestLiving && (
+                  <div className="highlight-card" onClick={() => onNavigate('profile', stats.oldestLiving!.id)}>
+                    <div className="highlight-label">Oldest Living</div>
+                    <div className="highlight-text">{stats.oldestLiving.firstName} {stats.oldestLiving.lastName}</div>
+                    {stats.oldestLiving.birthYear && <div className="highlight-sub">Born {stats.oldestLiving.birthYear}</div>}
+                  </div>
+                )}
+                {stats.youngest && (
+                  <div className="highlight-card" onClick={() => onNavigate('profile', stats.youngest!.id)}>
+                    <div className="highlight-label">Youngest Member</div>
+                    <div className="highlight-text">{stats.youngest.firstName} {stats.youngest.lastName}</div>
+                    {stats.youngest.birthYear && <div className="highlight-sub">Born {stats.youngest.birthYear}</div>}
+                  </div>
+                )}
+                {/* Always show total stat */}
+                <div className="highlight-card">
+                  <div className="highlight-label">Family Size</div>
+                  <div className="highlight-text">{stats.total} members</div>
+                  <div className="highlight-sub">{stats.generations} generations, {stats.withPhotos} with photos</div>
                 </div>
-              )}
-              {stats.oldestLiving && (
-                <div className="highlight-card" onClick={() => onNavigate('profile', stats.oldestLiving!.id)}>
-                  <div className="highlight-label">Oldest Living</div>
-                  <div className="highlight-text">{stats.oldestLiving.firstName} {stats.oldestLiving.lastName}</div>
-                  {stats.oldestLiving.birthYear && <div className="highlight-sub">Born {stats.oldestLiving.birthYear}</div>}
-                </div>
-              )}
-              {stats.mostChildren.person && (
-                <div className="highlight-card" onClick={() => onNavigate('profile', stats.mostChildren.person!.id)}>
-                  <div className="highlight-label">Most Children</div>
-                  <div className="highlight-text">{stats.mostChildren.person.firstName} {stats.mostChildren.person.lastName}</div>
-                  <div className="highlight-sub">{stats.mostChildren.count} children</div>
-                </div>
-              )}
-              {stats.youngest && (
-                <div className="highlight-card" onClick={() => onNavigate('profile', stats.youngest!.id)}>
-                  <div className="highlight-label">Youngest Member</div>
-                  <div className="highlight-text">{stats.youngest.firstName} {stats.youngest.lastName}</div>
-                  {stats.youngest.birthYear && <div className="highlight-sub">Born {stats.youngest.birthYear}</div>}
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* ANNOUNCEMENTS */}
+          {/* FAMILY BOARD - ALWAYS SHOW */}
           <div className="section">
             <div className="section-header">
               <h2 className="section-title"><Icons.mic size={20} /> Family Board</h2>
@@ -119,7 +128,7 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
                 <input className="ann-input" placeholder="Title (e.g. Baby born!)" value={annForm.title} onChange={e => setAnnForm(f => ({ ...f, title: e.target.value }))} />
                 <textarea className="ann-textarea" placeholder="What's the news?" value={annForm.content} onChange={e => setAnnForm(f => ({ ...f, content: e.target.value }))} rows={3} />
                 <div className="ann-form-row">
-                  <input className="ann-input ann-author" placeholder="Your name" value={annForm.author} onChange={e => setAnnForm(f => ({ ...f, author: e.target.value }))} />
+                  <input className="ann-input ann-name" placeholder="Your name" value={annForm.author} onChange={e => setAnnForm(f => ({ ...f, author: e.target.value }))} />
                   <select className="ann-select" value={annForm.type} onChange={e => setAnnForm(f => ({ ...f, type: e.target.value }))}>
                     <option value="general">General</option><option value="birth">Birth</option><option value="wedding">Wedding</option>
                     <option value="funeral">Funeral</option><option value="reunion">Reunion</option><option value="achievement">Achievement</option>
@@ -130,7 +139,7 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
             )}
 
             {announcements.length === 0 ? (
-              <div className="ann-empty">No announcements yet. Share family news here.</div>
+              <div className="ann-empty">No announcements yet. Share family news, celebrations, or reunions here.</div>
             ) : (
               <div className="ann-list">
                 {announcements.slice(0, 5).map(a => (
@@ -141,7 +150,7 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
                     </div>
                     <div className="ann-title">{a.title}</div>
                     <div className="ann-content">{a.content}</div>
-                    <div className="ann-author">By {a.authorName}</div>
+                    <div className="ann-by">By {a.authorName}</div>
                   </div>
                 ))}
               </div>
@@ -186,6 +195,13 @@ export function HomePage({ onNavigate, onAddPerson }: HomePageProps) {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* EMPTY STATE for brand new families */}
+          {people.length === 0 && (
+            <div className="section">
+              <EmptyState icon="tree" title="Your family tree starts here" description="Add your first family member." action={<button className="btn btn-primary" onClick={onAddPerson}><Icons.plus size={16} /> Add the first person</button>} />
             </div>
           )}
         </>
