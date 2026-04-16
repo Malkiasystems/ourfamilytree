@@ -1,287 +1,286 @@
-.profile {
-  max-width: 800px; margin: 0 auto; padding: 32px 20px;
-}
+.profile { max-width: 800px; margin: 0 auto; padding: 32px 20px; }
 .profile-back {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.8rem; color: var(--c-text-muted);
   cursor: pointer; margin-bottom: 24px;
   transition: var(--transition);
-  background: none; border: none;
-  font-family: var(--font-body);
+  background: none; border: none; font-family: var(--font-body);
 }
 .profile-back:hover { color: var(--c-text); }
 
-.profile-header {
-  display: flex; gap: 24px; align-items: flex-start;
-  margin-bottom: 32px; flex-wrap: wrap;
-}
+.profile-header { display: flex; gap: 24px; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; }
 .profile-avatar { flex-shrink: 0; }
 .profile-info { flex: 1; min-width: 0; }
-.profile-name {
-  font-family: var(--font-display);
-  font-size: 2rem; font-weight: 600;
-  color: var(--c-earth); line-height: 1.2;
-}
-.profile-clan {
-  font-size: 0.82rem; color: var(--c-gold-dim);
-  font-weight: 500; margin-top: 4px;
-}
-.profile-meta {
-  display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px;
-}
-.profile-meta-item {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.82rem; color: var(--c-text-secondary);
-}
+.profile-name { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--c-earth); line-height: 1.2; }
+.profile-clan { font-size: 0.82rem; color: var(--c-gold-dim); font-weight: 500; margin-top: 4px; }
+.profile-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.profile-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--c-text-secondary); }
 .profile-meta-item svg { color: var(--c-text-muted); }
 .profile-name-meaning {
   margin-top: 16px; padding: 12px 16px;
-  background: rgba(200,169,110,0.06);
-  border-left: 3px solid var(--c-gold);
+  background: rgba(200,169,110,0.06); border-left: 3px solid var(--c-gold);
   border-radius: 0 var(--radius) var(--radius) 0;
-  font-size: 0.85rem; color: var(--c-text-secondary);
-  font-style: italic;
+  font-size: 0.85rem; color: var(--c-text-secondary); font-style: italic;
 }
 
-/* ── Tabs ── */
-.tabs {
-  display: flex; gap: 0;
-  border-bottom: 1px solid var(--c-border);
-  margin-bottom: 24px; overflow-x: auto;
-}
+/* Tabs */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--c-border); margin-bottom: 24px; overflow-x: auto; }
 .tab {
-  padding: 10px 20px;
-  font-family: var(--font-body);
-  font-size: 0.82rem; font-weight: 500;
-  color: var(--c-text-muted);
-  background: none; border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer; transition: var(--transition);
-  white-space: nowrap;
+  padding: 10px 20px; font-family: var(--font-body); font-size: 0.82rem; font-weight: 500;
+  color: var(--c-text-muted); background: none; border: none;
+  border-bottom: 2px solid transparent; cursor: pointer; transition: var(--transition); white-space: nowrap;
 }
 .tab:hover { color: var(--c-text); }
 .tab.active { color: var(--c-earth); border-bottom-color: var(--c-gold); }
 
-/* ── Sections ── */
+/* Sections */
 .profile-section { margin-bottom: 32px; }
 .profile-section-title {
-  font-family: var(--font-display);
-  font-size: 1.15rem; font-weight: 600;
-  color: var(--c-earth); margin-bottom: 12px;
-  padding-bottom: 8px;
+  font-family: var(--font-display); font-size: 1.15rem; font-weight: 600;
+  color: var(--c-earth); margin-bottom: 12px; padding-bottom: 8px;
   border-bottom: 1px solid var(--c-border-light);
   display: flex; align-items: center; gap: 8px;
 }
 .profile-section-title svg { color: var(--c-gold-dim); }
-.profile-bio {
-  font-size: 0.92rem; line-height: 1.8; color: var(--c-text-secondary);
-}
+.profile-bio { font-size: 0.92rem; line-height: 1.8; color: var(--c-text-secondary); }
+.profile-bio-empty { font-size: 0.92rem; line-height: 1.8; color: var(--c-text-muted); font-style: italic; }
 
-/* ── Achievements ── */
+/* Achievements */
 .profile-achievements { list-style: none; }
 .profile-achievement {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 8px 0; font-size: 0.88rem;
-  color: var(--c-text-secondary);
+  display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+  font-size: 0.88rem; color: var(--c-text-secondary);
   border-bottom: 1px solid var(--c-border-light);
 }
 .profile-achievement:last-child { border-bottom: none; }
-.profile-achievement-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--c-gold); margin-top: 8px; flex-shrink: 0;
-}
+.profile-achievement-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-gold); margin-top: 8px; flex-shrink: 0; }
 
-/* ── Relations ── */
-.profile-relations {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-}
+/* Relations */
+.profile-relations { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
 .profile-relation-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px;
-  background: var(--c-cream);
-  border: 1px solid var(--c-border-light);
-  border-radius: var(--radius);
-  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: var(--c-cream); border: 1px solid var(--c-border-light);
+  border-radius: var(--radius); cursor: pointer; transition: var(--transition);
 }
-.profile-relation-card:hover {
-  border-color: var(--c-gold); background: var(--c-parchment);
-}
+.profile-relation-card:hover { border-color: var(--c-gold); background: var(--c-parchment); }
 .profile-relation-avatar { flex-shrink: 0; }
-.profile-relation-name {
-  font-family: var(--font-display);
-  font-weight: 600; font-size: 0.82rem; color: var(--c-text);
-}
-.profile-relation-type {
-  font-size: 0.7rem; color: var(--c-text-muted);
-  text-transform: uppercase; letter-spacing: 0.08em;
-}
+.profile-relation-name { font-family: var(--font-display); font-weight: 600; font-size: 0.82rem; color: var(--c-text); }
+.profile-relation-type { font-size: 0.7rem; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .profile-relation-group { margin-bottom: 24px; }
-.profile-relation-group-label {
-  font-size: 0.75rem; color: var(--c-text-muted);
-  text-transform: uppercase; letter-spacing: 0.1em;
-  margin-bottom: 8px;
-}
+.profile-relation-group-label { font-size: 0.75rem; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
 
-/* ── Empty state ── */
-.empty-state {
-  text-align: center; padding: 48px 24px; color: var(--c-text-muted);
-}
-.empty-state svg { margin-bottom: 16px; opacity: 0.3; }
-.empty-state-text {
-  font-family: var(--font-display);
-  font-size: 1.1rem; font-weight: 400;
-  margin-bottom: 8px; color: var(--c-text-secondary);
-}
-.empty-state-sub {
-  font-size: 0.82rem; max-width: 320px; margin: 0 auto;
-}
+/* ═══════════════════════════════════════════════════════════════
+   YEARBOOK-STYLE PHOTO GALLERY
+   ═══════════════════════════════════════════════════════════════ */
 
-.profile-bio-empty {
-  font-size: 0.92rem;
-  line-height: 1.8;
-  color: var(--c-text-muted);
-  font-style: italic;
-}
-
-/* ── PHOTOS ── */
-.photos-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-.photos-header .profile-section-title { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-.photos-upload-btn { cursor: pointer; }
-
-.photos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-}
-@media (max-width: 480px) {
-  .photos-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-}
-
-.photo-card {
-  background: var(--c-white);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.photo-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--c-gold);
-  transform: translateY(-2px);
-}
-
-.photo-img-wrap {
-  aspect-ratio: 1;
-  overflow: hidden;
-  background: var(--c-cream);
-}
-.photo-img-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-.photo-card:hover .photo-img-wrap img {
-  transform: scale(1.05);
-}
-
-.photo-caption {
-  padding: 8px 10px;
+.yearbook-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 6px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
-.photo-caption-text {
-  font-size: 0.78rem;
+.yearbook-header .profile-section-title {
+  margin-bottom: 0; border-bottom: none; padding-bottom: 0;
+}
+.yearbook-subtitle {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--c-text-muted);
+  margin-top: 2px;
+}
+.yearbook-upload-btn { cursor: pointer; }
+
+/* Empty state - yearbook frame */
+.yearbook-empty {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+.yearbook-empty-frame {
+  text-align: center;
+  padding: 48px 40px;
+  border: 2px dashed var(--c-border);
+  border-radius: 12px;
+  background: var(--c-cream);
+  max-width: 340px;
+  width: 100%;
+}
+.yearbook-empty-frame svg {
+  color: var(--c-text-muted);
+  opacity: 0.25;
+  margin-bottom: 16px;
+}
+.yearbook-empty-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--c-text-secondary);
+  margin-bottom: 8px;
+}
+.yearbook-empty-frame p {
+  font-size: 0.88rem;
+  color: var(--c-text-muted);
+  line-height: 1.5;
+}
+.yearbook-empty-sub {
+  font-size: 0.78rem !important;
+  margin-top: 4px;
+}
+
+/* Photo grid */
+.yearbook-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 540px) {
+  .yearbook-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+/* Individual photo card */
+.yearbook-card {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.yearbook-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+.yearbook-card.is-profile {
+  border-color: var(--c-gold);
+  box-shadow: 0 0 0 1px var(--c-gold), var(--shadow-md);
+}
+
+/* Photo image */
+.yearbook-img {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--c-cream);
+}
+.yearbook-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.yearbook-card:hover .yearbook-img img {
+  transform: scale(1.04);
+}
+
+/* Profile badge on current profile photo */
+.yearbook-profile-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 10px;
+  background: var(--c-gold);
+  color: var(--c-earth);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Caption area */
+.yearbook-info {
+  padding: 12px 14px;
+  border-top: 1px solid var(--c-border-light);
+}
+.yearbook-caption-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.yearbook-caption {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--c-text);
   line-height: 1.3;
   flex: 1;
 }
-.photo-caption-year {
-  font-size: 0.7rem;
+.yearbook-caption.muted {
+  color: var(--c-text-muted);
+  font-style: italic;
+}
+.yearbook-year {
+  font-size: 0.75rem;
   color: var(--c-text-muted);
   font-variant-numeric: tabular-nums;
+  background: var(--c-cream);
+  padding: 2px 8px;
+  border-radius: 8px;
   flex-shrink: 0;
+  font-weight: 500;
 }
 
-/* ── LIGHTBOX ── */
+/* Set as profile button */
+.yearbook-set-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  background: none;
+  border: 1px solid var(--c-border-light);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.yearbook-set-btn:hover {
+  background: var(--c-gold);
+  color: var(--c-earth);
+  border-color: var(--c-gold);
+}
+.yearbook-set-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHTBOX
+   ═══════════════════════════════════════════════════════════════ */
 .lightbox-overlay {
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(0, 0, 0, 0.92);
   z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   padding: 40px;
   animation: fadeIn 0.2s ease;
   cursor: pointer;
 }
 .lightbox-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute; top: 16px; right: 16px;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
   background: rgba(255,255,255,0.1);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  cursor: pointer;
-  transition: var(--transition);
-  z-index: 301;
+  border: none; border-radius: 50%;
+  color: white; cursor: pointer;
+  transition: var(--transition); z-index: 301;
 }
 .lightbox-close:hover { background: rgba(255,255,255,0.25); }
 .lightbox-img {
-  max-width: 90vw;
-  max-height: 85vh;
+  max-width: 90vw; max-height: 85vh;
   object-fit: contain;
   border-radius: var(--radius);
   cursor: default;
   animation: modalIn 0.25s ease;
-}
-
-/* ── SET AS PROFILE BUTTON ── */
-.photo-bottom {
-  padding: 6px 10px 8px;
-}
-.photo-set-profile {
-  display: block;
-  width: 100%;
-  margin-top: 4px;
-  padding: 4px 8px;
-  font-family: var(--font-body);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-text-muted);
-  background: var(--c-cream);
-  border: 1px solid var(--c-border-light);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: var(--transition);
-}
-.photo-set-profile:hover {
-  background: var(--c-gold);
-  color: var(--c-earth);
-  border-color: var(--c-gold);
-}
-.photo-set-profile.active {
-  background: var(--c-sage);
-  color: var(--c-white);
-  border-color: var(--c-sage);
-  cursor: default;
 }
