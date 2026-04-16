@@ -431,3 +431,13 @@ export async function uploadPhoto(
   if (insertErr) { console.error('uploadPhoto insert:', insertErr); return false; }
   return true;
 }
+
+export async function setProfilePhoto(personId: string, photoUrl: string): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase
+    .from('people')
+    .update({ photo_url: photoUrl })
+    .eq('id', personId);
+  if (error) { console.error('setProfilePhoto:', error); return false; }
+  return true;
+}
