@@ -10,21 +10,66 @@ interface FamilyTreePageProps {
   onAddPerson: () => void;
 }
 
-function TreeNode({ person, onSelect }: { person: Person; onSelect: (id: string) => void }) {
+interface TreeNodeData extends Person {
+  children: TreeNodeData[];
+}
+
+// Build a tree structure from flat people array using parent_child relationships
+function buildTree(people: Person[]): TreeNodeData[] {
+  const byId = new Map<string, TreeNodeData>();
+  people.forEach(p => byId.set(p.id, { ...p, children: [] }));
+
+  const roots: TreeNodeData[] = [];
+  byId.forEach(person => {
+    if (person.parentIds.length === 0) {
+      roots.push(person);
+    } else {
+      // Attach to the first parent found (avoid duplicates in tree rendering)
+      const parent = byId.get(person.parentIds[0]);
+      if (parent) {
+        parent.children.push(person);
+      } else {
+        roots.push(person);
+      }
+    }
+  });
+
+  return roots;
+}
+
+function TreeNodeCard({ person, onSelect }: { person: Person; onSelect: (id: string) => void }) {
   const nameParts = person.firstName.split(' ');
   const initials = nameParts[nameParts.length - 1][0] + (person.lastName?.[0] || '');
 
   return (
-    <div className="tree-node" onClick={() => onSelect(person.id)}>
-      <div className={`tree-node-avatar ${person.gender} ${person.deathYear ? 'deceased' : ''}`}>
+    <div className="tree-card" onClick={() => onSelect(person.id)}>
+      <div className={`tree-card-avatar ${person.gender} ${person.deathYear ? 'deceased' : ''}`}>
         {initials}
       </div>
-      <div className="tree-node-name">{person.firstName}</div>
-      <div className="tree-node-years">
-        {person.birthYear}{person.deathYear ? `\u2013${person.deathYear}` : ''}
+      <div className="tree-card-name">
+        {person.firstName}{person.lastName ? ` ${person.lastName}` : ''}
       </div>
-      <div className="tree-node-role">{person.occupation?.split('/')[0]?.trim()}</div>
+      {(person.birthYear || person.deathYear) && (
+        <div className="tree-card-years">
+          {person.birthYear || '?'}{person.deathYear ? `\u2013${person.deathYear}` : ''}
+        </div>
+      )}
     </div>
+  );
+}
+
+function TreeBranch({ node, onSelect }: { node: TreeNodeData; onSelect: (id: string) => void }) {
+  return (
+    <li className="tree-li">
+      <TreeNodeCard person={node} onSelect={onSelect} />
+      {node.children.length > 0 && (
+        <ul className="tree-ul">
+          {node.children.map(child => (
+            <TreeBranch key={child.id} node={child} onSelect={onSelect} />
+          ))}
+        </ul>
+      )}
+    </li>
   );
 }
 
@@ -32,24 +77,7 @@ export function FamilyTreePage({ onSelectPerson, onAddPerson }: FamilyTreePagePr
   const [zoom, setZoom] = useState(1);
   const { data: people, loading } = useAsync(fetchPeople, []);
 
-  const generations = useMemo(() => {
-    const gens: Record<number, Person[]> = {};
-    people.forEach(p => {
-      const gen = p.generation || 1;
-      if (!gens[gen]) gens[gen] = [];
-      gens[gen].push(p);
-    });
-    return gens;
-  }, [people]);
-
-  const genLabels: Record<number, string> = {
-    1: 'First Generation',
-    2: 'Second Generation',
-    3: 'Third Generation',
-    4: 'Fourth Generation',
-    5: 'Fifth Generation',
-    6: 'Sixth Generation',
-  };
+  const trees = useMemo(() => buildTree(people), [people]);
 
   if (loading) {
     return <div className="section"><LoadingState text="Loading family tree..." /></div>;
@@ -72,6 +100,8 @@ export function FamilyTreePage({ onSelectPerson, onAddPerson }: FamilyTreePagePr
     );
   }
 
+  const generationCount = new Set(people.map(p => p.generation)).size;
+
   return (
     <div className="section">
       <div className="section-header">
@@ -80,34 +110,28 @@ export function FamilyTreePage({ onSelectPerson, onAddPerson }: FamilyTreePagePr
       </div>
       <div className="tree-container">
         <div className="tree-toolbar">
-          <span className="tree-toolbar-label">{people.length} members, {Object.keys(generations).length} generations</span>
+          <span className="tree-toolbar-label">
+            {people.length} members, {generationCount} {generationCount === 1 ? 'generation' : 'generations'}
+          </span>
           <div className="tree-toolbar-group">
-            <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.min(z + 0.15, 1.5))}>
+            <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.min(z + 0.15, 1.8))} title="Zoom in">
               <Icons.zoomIn size={16} />
             </button>
-            <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.max(z - 0.15, 0.5))}>
+            <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.max(z - 0.15, 0.4))} title="Zoom out">
               <Icons.zoomOut size={16} />
             </button>
-            <button className="tree-toolbar-btn" onClick={() => setZoom(1)}>
+            <button className="tree-toolbar-btn" onClick={() => setZoom(1)} title="Reset zoom">
               <Icons.home size={16} />
             </button>
           </div>
         </div>
         <div className="tree-canvas">
-          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', transition: 'transform 0.2s ease' }}>
-            {Object.entries(generations).sort(([a], [b]) => Number(a) - Number(b)).map(([gen, gpeople], idx, arr) => (
-              <div key={gen}>
-                <div className="tree-gen-header">
-                  <span className="tree-gen-badge">
-                    {genLabels[Number(gen)] || `Generation ${gen}`}
-                  </span>
-                </div>
-                <div className="tree-generation">
-                  {gpeople.map(p => (
-                    <TreeNode key={p.id} person={p} onSelect={onSelectPerson} />
-                  ))}
-                </div>
-                {idx < arr.length - 1 && <div className="tree-connector" />}
+          <div className="tree-stage" style={{ transform: `scale(${zoom})` }}>
+            {trees.map(root => (
+              <div key={root.id} className="tree-root-wrapper">
+                <ul className="tree-ul tree-ul-root">
+                  <TreeBranch node={root} onSelect={onSelectPerson} />
+                </ul>
               </div>
             ))}
           </div>
