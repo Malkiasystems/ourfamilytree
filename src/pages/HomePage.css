@@ -166,7 +166,6 @@
 .ann-textarea { width: 100%; padding: 10px 14px; font-family: var(--font-body); font-size: 0.88rem; color: var(--c-text); background: var(--c-white); border: 1px solid var(--c-border); border-radius: var(--radius); resize: vertical; min-height: 80px; }
 .ann-textarea:focus { outline: none; border-color: var(--c-gold); }
 .ann-form-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-.ann-author { flex: 1; min-width: 120px; margin-bottom: 0; }
 .ann-select { padding: 8px 12px; font-family: var(--font-body); font-size: 0.82rem; border: 1px solid var(--c-border); border-radius: var(--radius); background: var(--c-white); color: var(--c-text); }
 .ann-empty { text-align: center; padding: 32px 20px; color: var(--c-text-muted); font-size: 0.88rem; }
 
@@ -185,4 +184,5 @@
 .ann-date { font-size: 0.72rem; color: var(--c-text-muted); }
 .ann-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--c-earth); margin-bottom: 4px; }
 .ann-content { font-size: 0.88rem; color: var(--c-text-secondary); line-height: 1.6; }
-.ann-author { font-size: 0.75rem; color: var(--c-text-muted); margin-top: 8px; }
+.ann-by { font-size: 0.75rem; color: var(--c-text-muted); margin-top: 8px; }
+.ann-name { flex: 1; min-width: 120px; margin-bottom: 0; }
