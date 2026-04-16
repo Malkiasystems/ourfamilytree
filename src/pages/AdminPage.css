@@ -1,0 +1,169 @@
+.admin-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--c-border);
+  margin-bottom: 24px;
+}
+.admin-tab {
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-tab:hover { color: var(--c-text); }
+.admin-tab.active {
+  color: var(--c-earth);
+  border-bottom-color: var(--c-gold);
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--c-rust);
+  color: var(--c-white);
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.proposal-card {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+.proposal-card:hover { box-shadow: var(--shadow-sm); }
+.proposal-card.history { opacity: 0.8; }
+.proposal-card.history.approved { border-left: 3px solid var(--c-sage); }
+.proposal-card.history.rejected { border-left: 3px solid var(--c-rust); }
+
+.proposal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--c-border-light);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.proposal-labels {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.proposal-table {
+  font-size: 0.78rem;
+  color: var(--c-text-muted);
+}
+.proposal-date {
+  font-size: 0.75rem;
+  color: var(--c-text-muted);
+}
+
+.action-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 12px;
+}
+.action-badge.create { background: rgba(107,126,94,0.12); color: var(--c-sage); }
+.action-badge.update { background: rgba(200,169,110,0.15); color: var(--c-accent); }
+.action-badge.delete { background: rgba(155,79,58,0.12); color: var(--c-rust); }
+.action-badge.approved { background: rgba(107,126,94,0.12); color: var(--c-sage); }
+.action-badge.rejected { background: rgba(155,79,58,0.12); color: var(--c-rust); }
+
+.proposal-body {
+  padding: 16px 20px;
+}
+
+.proposal-person-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--c-earth);
+  margin-bottom: 6px;
+}
+.proposal-person-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.proposal-person-details span {
+  font-size: 0.78rem;
+  color: var(--c-text-secondary);
+  padding: 2px 10px;
+  background: var(--c-cream);
+  border-radius: 12px;
+}
+.proposal-bio {
+  font-size: 0.85rem;
+  color: var(--c-text-secondary);
+  line-height: 1.6;
+  margin-top: 10px;
+  max-height: 80px;
+  overflow: hidden;
+}
+.proposal-meaning {
+  font-size: 0.82rem;
+  color: var(--c-gold-dim);
+  font-style: italic;
+  margin-top: 6px;
+}
+.proposal-note {
+  padding: 10px 20px;
+  font-size: 0.82rem;
+  color: var(--c-text-muted);
+  border-top: 1px solid var(--c-border-light);
+  background: var(--c-cream);
+}
+
+.proposal-raw {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.proposal-raw-field {
+  display: flex;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+.proposal-raw-key {
+  font-weight: 600;
+  color: var(--c-text-secondary);
+  min-width: 100px;
+}
+.proposal-raw-value {
+  color: var(--c-text);
+}
+
+.proposal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--c-border-light);
+  background: var(--c-cream);
+}
