@@ -4,3 +4,4 @@ export { PeoplePage } from './PeoplePage';
 export { TimelinePage } from './TimelinePage';
 export { StoriesPage } from './StoriesPage';
 export { PersonProfile } from './PersonProfile';
+export { AdminPage } from './AdminPage';
