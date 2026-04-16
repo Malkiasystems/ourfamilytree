@@ -1,142 +1,228 @@
-import React, { useState, useMemo } from 'react';
-import { Icons, LoadingState, EmptyState } from '@/components';
-import { fetchPeople } from '@/data/api';
-import { useAsync } from '@/lib/useAsync';
-import type { Person } from '@/types';
-import './FamilyTreePage.css';
-
-interface FamilyTreePageProps {
-  onSelectPerson: (id: string) => void;
-  onAddPerson: () => void;
+/* ── CONTAINER ── */
+.tree-container {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  min-height: 500px;
 }
 
-interface TreeNodeData extends Person {
-  children: TreeNodeData[];
+.tree-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--c-border-light);
+  background: var(--c-cream);
+}
+.tree-toolbar-group { display: flex; gap: 4px; }
+.tree-toolbar-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  color: var(--c-text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.tree-toolbar-btn:hover {
+  background: var(--c-parchment);
+  color: var(--c-text);
+  border-color: var(--c-clay);
+}
+.tree-toolbar-label {
+  font-size: 0.78rem;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-// Build a tree structure from flat people array using parent_child relationships
-function buildTree(people: Person[]): TreeNodeData[] {
-  const byId = new Map<string, TreeNodeData>();
-  people.forEach(p => byId.set(p.id, { ...p, children: [] }));
-
-  const roots: TreeNodeData[] = [];
-  byId.forEach(person => {
-    if (person.parentIds.length === 0) {
-      roots.push(person);
-    } else {
-      // Attach to the first parent found (avoid duplicates in tree rendering)
-      const parent = byId.get(person.parentIds[0]);
-      if (parent) {
-        parent.children.push(person);
-      } else {
-        roots.push(person);
-      }
-    }
-  });
-
-  return roots;
+/* ── CANVAS ── */
+.tree-canvas {
+  overflow: auto;
+  padding: 48px 32px;
+  min-height: 500px;
+  background: var(--c-cream);
+  background-image:
+    radial-gradient(circle, var(--c-border-light) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
 }
 
-function TreeNodeCard({ person, onSelect }: { person: Person; onSelect: (id: string) => void }) {
-  const nameParts = person.firstName.split(' ');
-  const initials = nameParts[nameParts.length - 1][0] + (person.lastName?.[0] || '');
-
-  return (
-    <div className="tree-card" onClick={() => onSelect(person.id)}>
-      <div className={`tree-card-avatar ${person.gender} ${person.deathYear ? 'deceased' : ''}`}>
-        {initials}
-      </div>
-      <div className="tree-card-name">
-        {person.firstName}{person.lastName ? ` ${person.lastName}` : ''}
-      </div>
-      {(person.birthYear || person.deathYear) && (
-        <div className="tree-card-years">
-          {person.birthYear || '?'}{person.deathYear ? `\u2013${person.deathYear}` : ''}
-        </div>
-      )}
-    </div>
-  );
+.tree-stage {
+  display: inline-block;
+  min-width: 100%;
+  transform-origin: top left;
+  transition: transform 0.2s ease;
+  padding: 16px 0;
 }
 
-function TreeBranch({ node, onSelect }: { node: TreeNodeData; onSelect: (id: string) => void }) {
-  return (
-    <li className="tree-li">
-      <TreeNodeCard person={node} onSelect={onSelect} />
-      {node.children.length > 0 && (
-        <ul className="tree-ul">
-          {node.children.map(child => (
-            <TreeBranch key={child.id} node={child} onSelect={onSelect} />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
+.tree-root-wrapper {
+  display: inline-block;
+  vertical-align: top;
+  padding: 0 20px;
 }
 
-export function FamilyTreePage({ onSelectPerson, onAddPerson }: FamilyTreePageProps) {
-  const [zoom, setZoom] = useState(1);
-  const { data: people, loading } = useAsync(fetchPeople, []);
+/* ── TREE STRUCTURE (nested UL pattern) ── */
+.tree-ul {
+  padding-top: 28px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  transition: all 0.3s ease;
+}
 
-  const trees = useMemo(() => buildTree(people), [people]);
+.tree-ul-root { padding-top: 0; }
 
-  if (loading) {
-    return <div className="section"><LoadingState text="Loading family tree..." /></div>;
-  }
+.tree-ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 1.5px solid var(--c-clay);
+  width: 0;
+  height: 28px;
+}
 
-  if (people.length === 0) {
-    return (
-      <div className="section">
-        <EmptyState
-          icon="tree"
-          title="No family members yet"
-          description="Start building your family tree by adding the oldest generation first. The tree will grow as you add more people and their relationships."
-          action={
-            <button className="btn btn-primary" onClick={onAddPerson}>
-              <Icons.plus size={16} /> Add first person
-            </button>
-          }
-        />
-      </div>
-    );
-  }
+.tree-ul-root::before { display: none; }
 
-  const generationCount = new Set(people.map(p => p.generation)).size;
+.tree-li {
+  text-align: center;
+  list-style: none;
+  position: relative;
+  padding: 28px 12px 0 12px;
+}
 
-  return (
-    <div className="section">
-      <div className="section-header">
-        <h2 className="section-title"><Icons.tree size={22} /> Family Tree</h2>
-        <span className="section-subtitle">Click any person to view their profile</span>
-      </div>
-      <div className="tree-container">
-        <div className="tree-toolbar">
-          <span className="tree-toolbar-label">
-            {people.length} members, {generationCount} {generationCount === 1 ? 'generation' : 'generations'}
-          </span>
-          <div className="tree-toolbar-group">
-            <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.min(z + 0.15, 1.8))} title="Zoom in">
-              <Icons.zoomIn size={16} />
-            </button>
-            <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.max(z - 0.15, 0.4))} title="Zoom out">
-              <Icons.zoomOut size={16} />
-            </button>
-            <button className="tree-toolbar-btn" onClick={() => setZoom(1)} title="Reset zoom">
-              <Icons.home size={16} />
-            </button>
-          </div>
-        </div>
-        <div className="tree-canvas">
-          <div className="tree-stage" style={{ transform: `scale(${zoom})` }}>
-            {trees.map(root => (
-              <div key={root.id} className="tree-root-wrapper">
-                <ul className="tree-ul tree-ul-root">
-                  <TreeBranch node={root} onSelect={onSelectPerson} />
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+.tree-li::before,
+.tree-li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  border-top: 1.5px solid var(--c-clay);
+  width: 50%;
+  height: 28px;
+}
+
+.tree-li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1.5px solid var(--c-clay);
+}
+
+/* Only one child: just a single vertical line */
+.tree-li:only-child::after,
+.tree-li:only-child::before {
+  display: none;
+}
+.tree-li:only-child {
+  padding-top: 28px;
+}
+.tree-li:only-child::before {
+  display: block;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 1.5px solid var(--c-clay);
+  width: 0;
+  height: 28px;
+  right: auto;
+  border-top: none;
+}
+
+/* First child: remove left line, keep right */
+.tree-li:first-child::before {
+  border: 0 none;
+}
+.tree-li:first-child::after {
+  border-radius: 2px 0 0 0;
+}
+
+/* Last child: remove right line, keep left */
+.tree-li:last-child::before {
+  border-right: 1.5px solid var(--c-clay);
+  border-radius: 0 2px 0 0;
+}
+.tree-li:last-child::after {
+  border: 0 none;
+}
+
+.tree-ul-root > .tree-li {
+  padding-top: 0;
+}
+.tree-ul-root > .tree-li::before,
+.tree-ul-root > .tree-li::after {
+  display: none;
+}
+
+/* ── PERSON CARD ── */
+.tree-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110px;
+  max-width: 140px;
+  padding: 12px 10px;
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 1;
+}
+
+.tree-card:hover {
+  border-color: var(--c-gold);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.tree-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  transition: var(--transition);
+}
+.tree-card:hover .tree-card-avatar {
+  border-color: var(--c-gold);
+}
+.tree-card-avatar.male {
+  background: rgba(74, 107, 138, 0.1);
+  color: var(--c-male);
+}
+.tree-card-avatar.female {
+  background: rgba(138, 90, 107, 0.1);
+  color: var(--c-female);
+}
+.tree-card-avatar.deceased { opacity: 0.55; }
+
+.tree-card-name {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--c-text);
+  line-height: 1.25;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+.tree-card-years {
+  font-size: 0.68rem;
+  color: var(--c-text-muted);
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
 }
