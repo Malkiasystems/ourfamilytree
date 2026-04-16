@@ -12,11 +12,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--c-border-light);
   background: var(--c-cream);
+  flex-wrap: wrap;
+  gap: 12px;
 }
-.tree-toolbar-group { display: flex; gap: 4px; }
+.tree-toolbar-left, .tree-toolbar-right {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.tree-toolbar-group { display: flex; gap: 4px; align-items: center; }
+
 .tree-toolbar-btn {
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
@@ -32,6 +39,26 @@
   color: var(--c-text);
   border-color: var(--c-clay);
 }
+
+.tree-toolbar-btn-text {
+  padding: 6px 12px;
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--c-text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.tree-toolbar-btn-text:hover {
+  background: var(--c-parchment);
+  color: var(--c-text);
+  border-color: var(--c-clay);
+}
+
 .tree-toolbar-label {
   font-size: 0.78rem;
   color: var(--c-text-muted);
@@ -42,11 +69,10 @@
 /* ── CANVAS ── */
 .tree-canvas {
   overflow: auto;
-  padding: 48px 32px;
+  padding: 40px 40px 60px;
   min-height: 500px;
   background: var(--c-cream);
-  background-image:
-    radial-gradient(circle, var(--c-border-light) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--c-border-light) 1px, transparent 1px);
   background-size: 24px 24px;
   background-position: 0 0;
 }
@@ -55,26 +81,26 @@
   display: inline-block;
   min-width: 100%;
   transform-origin: top left;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
   padding: 16px 0;
 }
 
 .tree-root-wrapper {
   display: inline-block;
   vertical-align: top;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 /* ── TREE STRUCTURE (nested UL pattern) ── */
 .tree-ul {
-  padding-top: 28px;
+  padding-top: 32px;
   position: relative;
   display: flex;
   justify-content: center;
   list-style: none;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  margin: 0;
 }
-
 .tree-ul-root { padding-top: 0; }
 
 .tree-ul::before {
@@ -84,18 +110,16 @@
   left: 50%;
   border-left: 1.5px solid var(--c-clay);
   width: 0;
-  height: 28px;
+  height: 32px;
 }
-
 .tree-ul-root::before { display: none; }
 
 .tree-li {
   text-align: center;
   list-style: none;
   position: relative;
-  padding: 28px 12px 0 12px;
+  padding: 32px 10px 0;
 }
-
 .tree-li::before,
 .tree-li::after {
   content: '';
@@ -104,53 +128,40 @@
   right: 50%;
   border-top: 1.5px solid var(--c-clay);
   width: 50%;
-  height: 28px;
+  height: 32px;
 }
-
 .tree-li::after {
   right: auto;
   left: 50%;
   border-left: 1.5px solid var(--c-clay);
 }
 
-/* Only one child: just a single vertical line */
+/* Single child: just a vertical line */
 .tree-li:only-child::after,
-.tree-li:only-child::before {
-  display: none;
-}
-.tree-li:only-child {
-  padding-top: 28px;
-}
+.tree-li:only-child::before { display: none; }
+.tree-li:only-child { padding-top: 32px; }
 .tree-li:only-child::before {
   display: block;
   content: '';
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 0; left: 50%;
   border-left: 1.5px solid var(--c-clay);
-  width: 0;
-  height: 28px;
-  right: auto;
-  border-top: none;
+  width: 0; height: 32px;
+  right: auto; border-top: none;
 }
 
-/* First child: remove left line, keep right */
-.tree-li:first-child::before {
-  border: 0 none;
-}
-.tree-li:first-child::after {
-  border-radius: 2px 0 0 0;
-}
+/* First child */
+.tree-li:first-child::before { border: 0 none; }
+.tree-li:first-child::after { border-radius: 2px 0 0 0; }
 
-/* Last child: remove right line, keep left */
+/* Last child */
 .tree-li:last-child::before {
   border-right: 1.5px solid var(--c-clay);
   border-radius: 0 2px 0 0;
 }
-.tree-li:last-child::after {
-  border: 0 none;
-}
+.tree-li:last-child::after { border: 0 none; }
 
+/* Root UL items have no connector lines to anything above */
 .tree-ul-root > .tree-li {
   padding-top: 0;
 }
@@ -160,45 +171,50 @@
 }
 
 /* ── PERSON CARD ── */
+.tree-card-wrapper {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
 .tree-card {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  min-width: 110px;
-  max-width: 140px;
+  min-width: 130px;
+  max-width: 160px;
   padding: 12px 10px;
   background: var(--c-white);
   border: 1px solid var(--c-border);
   border-radius: var(--radius-lg);
-  cursor: pointer;
   transition: var(--transition);
   box-shadow: var(--shadow-sm);
   position: relative;
-  z-index: 1;
 }
 
 .tree-card:hover {
   border-color: var(--c-gold);
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
 }
 
 .tree-card-avatar {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   margin-bottom: 8px;
   border: 2px solid transparent;
   transition: var(--transition);
+  cursor: pointer;
 }
-.tree-card:hover .tree-card-avatar {
+.tree-card-avatar:hover {
   border-color: var(--c-gold);
+  transform: scale(1.05);
 }
 .tree-card-avatar.male {
   background: rgba(74, 107, 138, 0.1);
@@ -212,17 +228,62 @@
 
 .tree-card-name {
   font-family: var(--font-display);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--c-text);
   line-height: 1.25;
   word-wrap: break-word;
-  hyphens: auto;
+  cursor: pointer;
 }
+.tree-card-name:hover { color: var(--c-gold-dim); }
 
 .tree-card-years {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   color: var(--c-text-muted);
   margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── TOGGLE BUTTON (show children) ── */
+.tree-toggle {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  min-width: 24px;
+  height: 22px;
+  background: var(--c-white);
+  border: 1.5px solid var(--c-clay);
+  border-radius: 12px;
+  color: var(--c-clay);
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 2;
+  box-shadow: var(--shadow-sm);
+}
+.tree-toggle:hover {
+  background: var(--c-gold);
+  border-color: var(--c-gold);
+  color: var(--c-white);
+  transform: translateX(-50%) scale(1.1);
+}
+.tree-toggle.expanded {
+  background: var(--c-clay);
+  border-color: var(--c-clay);
+  color: var(--c-white);
+}
+.tree-toggle.expanded:hover {
+  background: var(--c-earth);
+  border-color: var(--c-earth);
+}
+.tree-toggle-count {
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
