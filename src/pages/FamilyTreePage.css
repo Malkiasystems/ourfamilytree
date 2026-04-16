@@ -287,3 +287,20 @@
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
+
+/* ── PHOTO IN TREE CARD ── */
+.tree-card-avatar.has-photo {
+  background: var(--c-cream);
+  overflow: hidden;
+}
+.tree-card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.tree-card-avatar.has-photo {
+  position: relative;
+}

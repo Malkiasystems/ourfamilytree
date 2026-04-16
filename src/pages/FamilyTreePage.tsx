@@ -62,16 +62,21 @@ function TreeBranch({
   const initials = nameParts[nameParts.length - 1][0] + (node.lastName?.[0] || '');
   const hasChildren = node.children.length > 0;
   const isExpanded = expanded.has(node.id);
+  const hasPhoto = !!node.photo;
 
   return (
     <li className="tree-li">
       <div className="tree-card-wrapper">
         <div className="tree-card">
           <div
-            className={`tree-card-avatar ${node.gender} ${node.deathYear ? 'deceased' : ''}`}
+            className={`tree-card-avatar ${node.gender} ${node.deathYear ? 'deceased' : ''} ${hasPhoto ? 'has-photo' : ''}`}
             onClick={() => onSelect(node.id)}
           >
-            {initials}
+            {hasPhoto ? (
+              <img src={node.photo!} alt={node.firstName} className="tree-card-photo" />
+            ) : (
+              initials
+            )}
           </div>
           <div className="tree-card-name" onClick={() => onSelect(node.id)}>
             {node.firstName}{node.lastName ? ` ${node.lastName}` : ''}

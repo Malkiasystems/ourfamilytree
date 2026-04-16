@@ -252,3 +252,36 @@
   cursor: default;
   animation: modalIn 0.25s ease;
 }
+
+/* ── SET AS PROFILE BUTTON ── */
+.photo-bottom {
+  padding: 6px 10px 8px;
+}
+.photo-set-profile {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 4px 8px;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-text-muted);
+  background: var(--c-cream);
+  border: 1px solid var(--c-border-light);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.photo-set-profile:hover {
+  background: var(--c-gold);
+  color: var(--c-earth);
+  border-color: var(--c-gold);
+}
+.photo-set-profile.active {
+  background: var(--c-sage);
+  color: var(--c-white);
+  border-color: var(--c-sage);
+  cursor: default;
+}

@@ -3,7 +3,7 @@ import { Icons, Avatar, LoadingState, EmptyState } from '@/components';
 import {
   fetchPersonById, fetchPeople, fetchClans,
   fetchStoriesByPerson, fetchEventsByPerson,
-  fetchMediaByPerson, uploadPhoto,
+  fetchMediaByPerson, uploadPhoto, setProfilePhoto,
 } from '@/data/api';
 import { useAsync } from '@/lib/useAsync';
 import './PersonProfile.css';
@@ -21,9 +21,10 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
   const [photoRefresh, setPhotoRefresh] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [personRefresh, setPersonRefresh] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const { data: person, loading } = useAsync(() => fetchPersonById(personId), null, [personId]);
+  const { data: person, loading } = useAsync(() => fetchPersonById(personId), null, [personId, personRefresh]);
   const { data: allPeople } = useAsync(fetchPeople, []);
   const { data: clans } = useAsync(fetchClans, []);
   const { data: stories } = useAsync(() => fetchStoriesByPerson(personId), [], [personId]);
@@ -244,16 +245,27 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
           ) : (
             <div className="photos-grid">
               {photos.filter(m => m.mediaType === 'photo').map(photo => (
-                <div key={photo.id} className="photo-card" onClick={() => setLightbox(photo.url)}>
-                  <div className="photo-img-wrap">
+                <div key={photo.id} className="photo-card">
+                  <div className="photo-img-wrap" onClick={() => setLightbox(photo.url)}>
                     <img src={photo.url} alt={photo.caption || person.firstName} loading="lazy" />
                   </div>
-                  {(photo.caption || photo.yearTaken) && (
-                    <div className="photo-caption">
-                      {photo.caption && <span className="photo-caption-text">{photo.caption}</span>}
-                      {photo.yearTaken && <span className="photo-caption-year">{photo.yearTaken}</span>}
-                    </div>
-                  )}
+                  <div className="photo-bottom">
+                    {(photo.caption || photo.yearTaken) && (
+                      <div className="photo-caption">
+                        {photo.caption && <span className="photo-caption-text">{photo.caption}</span>}
+                        {photo.yearTaken && <span className="photo-caption-year">{photo.yearTaken}</span>}
+                      </div>
+                    )}
+                    <button
+                      className={`photo-set-profile ${person.photo === photo.url ? 'active' : ''}`}
+                      onClick={async () => {
+                        const ok = await setProfilePhoto(personId, photo.url);
+                        if (ok) setPersonRefresh(t => t + 1);
+                      }}
+                    >
+                      {person.photo === photo.url ? 'Profile photo' : 'Set as profile'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
