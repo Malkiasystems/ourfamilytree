@@ -7,6 +7,7 @@ import {
   TimelinePage,
   StoriesPage,
   PersonProfile,
+  AdminPage,
 } from '@/pages';
 import type { PageId } from '@/types';
 import './App.css';
@@ -81,6 +82,8 @@ export default function App() {
             onBack={() => navigate('people')}
           />
         )}
+
+        {page === 'admin' && <AdminPage />}
 
         <footer className="footer">
           <div className="footer-motto">Mti hukua kwa mizizi yake</div>
