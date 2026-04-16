@@ -16,6 +16,7 @@ const navItems: { id: PageId; label: string; icon: keyof typeof Icons }[] = [
   { id: 'people', icon: 'users', label: 'People' },
   { id: 'timeline', icon: 'timeline', label: 'Timeline' },
   { id: 'stories', icon: 'scroll', label: 'Stories' },
+  { id: 'admin', icon: 'shield', label: 'Admin' },
 ];
 
 export function TopBar({ currentPage, onNavigate, onSearchToggle, onAddPerson }: TopBarProps) {
