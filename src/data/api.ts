@@ -236,3 +236,198 @@ export async function submitPersonProposal(proposal: Record<string, unknown>): P
   if (error) { console.error('submitPersonProposal:', error); return false; }
   return true;
 }
+
+// ─── ADMIN FUNCTIONS ────────────────────────────────────────────────────────
+
+export interface ProposalRecord {
+  id: string;
+  proposedBy: string | null;
+  targetTable: string;
+  targetId: string | null;
+  action: 'create' | 'update' | 'delete';
+  proposedData: Record<string, any>;
+  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
+  reviewNote: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+}
+
+function mapProposal(row: any): ProposalRecord {
+  return {
+    id: row.id,
+    proposedBy: row.proposed_by,
+    targetTable: row.target_table,
+    targetId: row.target_id,
+    action: row.action,
+    proposedData: row.proposed_data || {},
+    status: row.status,
+    reviewNote: row.review_note,
+    createdAt: row.created_at,
+    reviewedAt: row.reviewed_at,
+  };
+}
+
+export async function fetchPendingProposals(): Promise<ProposalRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('edit_proposals')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('fetchPendingProposals:', error); return []; }
+  return (data || []).map(mapProposal);
+}
+
+export async function fetchRecentReviewed(limit = 10): Promise<ProposalRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('edit_proposals')
+    .select('*')
+    .neq('status', 'pending')
+    .order('reviewed_at', { ascending: false })
+    .limit(limit);
+  if (error) { console.error('fetchRecentReviewed:', error); return []; }
+  return (data || []).map(mapProposal);
+}
+
+export async function approveProposal(proposalId: string, note?: string): Promise<boolean> {
+  if (!supabase) return false;
+
+  // Fetch the proposal first
+  const { data: proposal, error: fetchErr } = await supabase
+    .from('edit_proposals')
+    .select('*')
+    .eq('id', proposalId)
+    .single();
+
+  if (fetchErr || !proposal) {
+    console.error('approveProposal fetch:', fetchErr);
+    return false;
+  }
+
+  // Apply the proposed change to the target table
+  if (proposal.action === 'create') {
+    const { error: insertErr } = await supabase
+      .from(proposal.target_table)
+      .insert({ ...proposal.proposed_data, verified: true });
+    if (insertErr) { console.error('approveProposal insert:', insertErr); return false; }
+  } else if (proposal.action === 'update' && proposal.target_id) {
+    const { error: updateErr } = await supabase
+      .from(proposal.target_table)
+      .update(proposal.proposed_data)
+      .eq('id', proposal.target_id);
+    if (updateErr) { console.error('approveProposal update:', updateErr); return false; }
+  } else if (proposal.action === 'delete' && proposal.target_id) {
+    const { error: deleteErr } = await supabase
+      .from(proposal.target_table)
+      .delete()
+      .eq('id', proposal.target_id);
+    if (deleteErr) { console.error('approveProposal delete:', deleteErr); return false; }
+  }
+
+  // Mark the proposal as approved
+  const { error: markErr } = await supabase
+    .from('edit_proposals')
+    .update({
+      status: 'approved',
+      review_note: note || null,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq('id', proposalId);
+
+  if (markErr) { console.error('approveProposal mark:', markErr); return false; }
+  return true;
+}
+
+export async function rejectProposal(proposalId: string, note?: string): Promise<boolean> {
+  if (!supabase) return false;
+  const { error } = await supabase
+    .from('edit_proposals')
+    .update({
+      status: 'rejected',
+      review_note: note || null,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq('id', proposalId);
+  if (error) { console.error('rejectProposal:', error); return false; }
+  return true;
+}
+
+// ─── MEDIA / PHOTOS ─────────────────────────────────────────────────────────
+
+export interface MediaRecord {
+  id: string;
+  personId: string | null;
+  mediaType: 'photo' | 'video' | 'audio' | 'document';
+  url: string;
+  thumbnailUrl: string | null;
+  caption: string | null;
+  description: string | null;
+  yearTaken: number | null;
+  uploadedBy: string | null;
+  createdAt: string;
+}
+
+function mapMedia(row: any): MediaRecord {
+  return {
+    id: row.id,
+    personId: row.person_id,
+    mediaType: row.media_type,
+    url: row.url,
+    thumbnailUrl: row.thumbnail_url,
+    caption: row.caption,
+    description: row.description,
+    yearTaken: row.year_taken,
+    uploadedBy: row.uploaded_by,
+    createdAt: row.created_at,
+  };
+}
+
+export async function fetchMediaByPerson(personId: string): Promise<MediaRecord[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from('media')
+    .select('*')
+    .eq('person_id', personId)
+    .order('year_taken', { ascending: false });
+  if (error) { console.error('fetchMediaByPerson:', error); return []; }
+  return (data || []).map(mapMedia);
+}
+
+export async function uploadPhoto(
+  file: File,
+  personId: string,
+  caption?: string,
+  yearTaken?: number,
+): Promise<boolean> {
+  if (!supabase) return false;
+
+  // Upload to Supabase Storage
+  const ext = file.name.split('.').pop() || 'jpg';
+  const fileName = `${personId}/${Date.now()}.${ext}`;
+
+  const { error: uploadErr } = await supabase.storage
+    .from('media')
+    .upload(fileName, file, { cacheControl: '3600', upsert: false });
+
+  if (uploadErr) { console.error('uploadPhoto storage:', uploadErr); return false; }
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from('media')
+    .getPublicUrl(fileName);
+
+  // Insert media record
+  const { error: insertErr } = await supabase.from('media').insert({
+    person_id: personId,
+    media_type: 'photo',
+    url: urlData.publicUrl,
+    caption: caption || null,
+    year_taken: yearTaken || null,
+    file_size_bytes: file.size,
+    mime_type: file.type,
+  });
+
+  if (insertErr) { console.error('uploadPhoto insert:', insertErr); return false; }
+  return true;
+}
