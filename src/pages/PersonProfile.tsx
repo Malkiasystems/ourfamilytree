@@ -4,6 +4,7 @@ import {
   fetchPersonById, fetchPeople, fetchClans,
   fetchStoriesByPerson, fetchEventsByPerson,
   fetchMediaByPerson, uploadPhoto, setProfilePhoto,
+  deletePhoto, fetchComments, postComment, deleteComment,
 } from '@/data/api';
 import { useAsync } from '@/lib/useAsync';
 import './PersonProfile.css';
@@ -14,15 +15,22 @@ interface PersonProfileProps {
   onBack: () => void;
 }
 
-type ProfileTab = 'bio' | 'relations' | 'photos' | 'stories' | 'timeline';
+type ProfileTab = 'bio' | 'relations' | 'photos' | 'stories' | 'timeline' | 'comments';
+
+const EMOJIS = ['\u2764\uFE0F', '\u{1F64F}', '\u{1F60A}', '\u{1F622}', '\u{1F4AA}', '\u{1F331}', '\u2B50', '\u{1F54A}\uFE0F'];
 
 export function PersonProfile({ personId, onNavigate, onBack }: PersonProfileProps) {
   const [tab, setTab] = useState<ProfileTab>('bio');
   const [photoRefresh, setPhotoRefresh] = useState(0);
   const [personRefresh, setPersonRefresh] = useState(0);
+  const [commentRefresh, setCommentRefresh] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [settingProfile, setSettingProfile] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [commentName, setCommentName] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [commentEmoji, setCommentEmoji] = useState('');
+  const [postingComment, setPostingComment] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: person, loading } = useAsync(() => fetchPersonById(personId), null, [personId, personRefresh]);
@@ -31,6 +39,7 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
   const { data: stories } = useAsync(() => fetchStoriesByPerson(personId), [], [personId]);
   const { data: events } = useAsync(() => fetchEventsByPerson(personId), [], [personId]);
   const { data: photos } = useAsync(() => fetchMediaByPerson(personId), [], [personId, photoRefresh]);
+  const { data: comments } = useAsync(() => fetchComments(personId), [], [personId, commentRefresh]);
 
   if (loading) return <div className="profile"><LoadingState text="Loading profile..." /></div>;
   if (!person) return (
@@ -64,14 +73,14 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const caption = window.prompt('Short caption for this photo (optional):') || undefined;
-    const yearStr = window.prompt('Year photo was taken (optional):') || undefined;
+    const caption = window.prompt('Short caption (optional):') || undefined;
+    const yearStr = window.prompt('Year taken (optional):') || undefined;
     const year = yearStr ? parseInt(yearStr, 10) : undefined;
     setUploading(true);
     const ok = await uploadPhoto(file, personId, caption, year && !isNaN(year) ? year : undefined);
     setUploading(false);
     if (ok) setPhotoRefresh(t => t + 1);
-    else alert('Upload failed. Make sure a "media" storage bucket exists in Supabase and is set to public.');
+    else alert('Upload failed. Check storage bucket.');
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -79,8 +88,34 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
     setSettingProfile(url);
     const ok = await setProfilePhoto(personId, url);
     if (ok) setPersonRefresh(t => t + 1);
-    else alert('Could not set profile photo. Check database permissions.');
     setSettingProfile(null);
+  };
+
+  const handleDeletePhoto = async (id: string, url: string) => {
+    if (!window.confirm('Delete this photo permanently?')) return;
+    const ok = await deletePhoto(id, url);
+    if (ok) {
+      setPhotoRefresh(t => t + 1);
+      if (person.photo === url) setPersonRefresh(t => t + 1);
+    }
+  };
+
+  const handlePostComment = async () => {
+    if (!commentName.trim() || !commentText.trim()) return;
+    setPostingComment(true);
+    const ok = await postComment(personId, commentName.trim(), commentText.trim(), commentEmoji || undefined);
+    setPostingComment(false);
+    if (ok) {
+      setCommentText('');
+      setCommentEmoji('');
+      setCommentRefresh(t => t + 1);
+    }
+  };
+
+  const handleDeleteComment = async (id: string) => {
+    if (!window.confirm('Delete this comment?')) return;
+    await deleteComment(id);
+    setCommentRefresh(t => t + 1);
   };
 
   return (
@@ -98,18 +133,11 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
               {person.gender === 'male' ? 'Male' : 'Female'}
             </span>
             {person.birthYear && (
-              <span className="profile-meta-item">
-                <Icons.calendar size={14} />
-                {person.birthYear}{person.deathYear ? ` \u2013 ${person.deathYear}` : ' \u2013 Present'}
-              </span>
+              <span className="profile-meta-item"><Icons.calendar size={14} />{person.birthYear}{person.deathYear ? ` \u2013 ${person.deathYear}` : ' \u2013 Present'}</span>
             )}
-            {person.birthPlace && (
-              <span className="profile-meta-item"><Icons.mapPin size={14} /> {person.birthPlace}</span>
-            )}
+            {person.birthPlace && <span className="profile-meta-item"><Icons.mapPin size={14} /> {person.birthPlace}</span>}
           </div>
-          {person.nameMeaning && (
-            <div className="profile-name-meaning"><strong>Name meaning:</strong> {person.nameMeaning}</div>
-          )}
+          {person.nameMeaning && <div className="profile-name-meaning"><strong>Name meaning:</strong> {person.nameMeaning}</div>}
         </div>
       </div>
 
@@ -118,6 +146,7 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
           { key: 'bio' as const, label: 'Biography' },
           { key: 'relations' as const, label: 'Relations' },
           { key: 'photos' as const, label: `Photos${personPhotos.length > 0 ? ` (${personPhotos.length})` : ''}` },
+          { key: 'comments' as const, label: `Wall${comments.length > 0 ? ` (${comments.length})` : ''}` },
           { key: 'stories' as const, label: 'Stories' },
           { key: 'timeline' as const, label: 'Timeline' },
         ]).map(t => (
@@ -136,9 +165,7 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
             <div className="profile-section">
               <h2 className="profile-section-title"><Icons.star size={18} /> Achievements</h2>
               <ul className="profile-achievements">
-                {person.achievements.map((a, i) => (
-                  <li key={i} className="profile-achievement"><span className="profile-achievement-dot" />{a}</li>
-                ))}
+                {person.achievements.map((a, i) => (<li key={i} className="profile-achievement"><span className="profile-achievement-dot" />{a}</li>))}
               </ul>
             </div>
           )}
@@ -162,9 +189,7 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
       {tab === 'relations' && (
         <div className="profile-section">
           <h2 className="profile-section-title"><Icons.link size={18} /> All Relationships</h2>
-          {!hasRelations ? (
-            <EmptyState icon="link" title="No relationships recorded" description="Connect this person to parents, spouses, children, or siblings." />
-          ) : relationGroups.map(group => group.items.length > 0 && (
+          {!hasRelations ? <EmptyState icon="link" title="No relationships recorded" /> : relationGroups.map(group => group.items.length > 0 && (
             <div key={group.label} className="profile-relation-group">
               <div className="profile-relation-group-label">{group.label}</div>
               <div className="profile-relations">
@@ -180,7 +205,7 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
         </div>
       )}
 
-      {/* PHOTOS - YEARBOOK STYLE */}
+      {/* PHOTOS YEARBOOK */}
       {tab === 'photos' && (
         <div className="profile-section">
           <div className="yearbook-header">
@@ -193,14 +218,11 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} disabled={uploading} />
             </label>
           </div>
-
           {personPhotos.length === 0 ? (
             <div className="yearbook-empty">
               <div className="yearbook-empty-frame">
-                <Icons.camera size={56} />
-                <div className="yearbook-empty-name">{person.firstName} {person.lastName}</div>
-                <p>No photos have been added yet.</p>
-                <p className="yearbook-empty-sub">Upload the first photo to start preserving visual memories.</p>
+                <Icons.camera size={56} /><div className="yearbook-empty-name">{person.firstName} {person.lastName}</div>
+                <p>No photos yet. Be the first to upload.</p>
                 <label className="btn btn-primary" style={{ cursor: 'pointer', marginTop: 16 }}>
                   <Icons.camera size={16} /> Upload Photo
                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} disabled={uploading} />
@@ -211,7 +233,6 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
             <div className="yearbook-grid">
               {personPhotos.map(photo => {
                 const isProfile = person.photo === photo.url;
-                const isSetting = settingProfile === photo.url;
                 return (
                   <div key={photo.id} className={`yearbook-card ${isProfile ? 'is-profile' : ''}`}>
                     <div className="yearbook-img" onClick={() => setLightbox(photo.url)}>
@@ -220,22 +241,17 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
                     </div>
                     <div className="yearbook-info">
                       <div className="yearbook-caption-row">
-                        {photo.caption ? (
-                          <span className="yearbook-caption">{photo.caption}</span>
-                        ) : (
-                          <span className="yearbook-caption muted">{person.firstName}</span>
-                        )}
+                        <span className={`yearbook-caption ${!photo.caption ? 'muted' : ''}`}>{photo.caption || person.firstName}</span>
                         {photo.yearTaken && <span className="yearbook-year">{photo.yearTaken}</span>}
                       </div>
-                      {!isProfile && (
-                        <button
-                          className="yearbook-set-btn"
-                          onClick={() => handleSetProfile(photo.url)}
-                          disabled={isSetting}
-                        >
-                          {isSetting ? 'Setting...' : 'Use as profile photo'}
-                        </button>
-                      )}
+                      <div className="yearbook-actions">
+                        {!isProfile && (
+                          <button className="yearbook-btn" onClick={() => handleSetProfile(photo.url)} disabled={settingProfile === photo.url}>
+                            {settingProfile === photo.url ? 'Setting...' : 'Set as profile'}
+                          </button>
+                        )}
+                        <button className="yearbook-btn delete" onClick={() => handleDeletePhoto(photo.id, photo.url)}>Delete</button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -245,13 +261,53 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
         </div>
       )}
 
+      {/* COMMENTS WALL */}
+      {tab === 'comments' && (
+        <div className="profile-section">
+          <h2 className="profile-section-title"><Icons.heart size={18} /> Family Wall</h2>
+          <p className="wall-subtitle">Leave a message, memory, or tribute for {person.firstName}</p>
+
+          <div className="comment-form">
+            <input className="comment-input" placeholder="Your name" value={commentName} onChange={e => setCommentName(e.target.value)} />
+            <textarea className="comment-textarea" placeholder={`Say something about ${person.firstName}...`} value={commentText} onChange={e => setCommentText(e.target.value)} rows={3} />
+            <div className="comment-form-bottom">
+              <div className="emoji-picker">
+                {EMOJIS.map(e => (
+                  <button key={e} className={`emoji-btn ${commentEmoji === e ? 'active' : ''}`} onClick={() => setCommentEmoji(commentEmoji === e ? '' : e)}>{e}</button>
+                ))}
+              </div>
+              <button className="btn btn-primary btn-sm" onClick={handlePostComment} disabled={postingComment || !commentName.trim() || !commentText.trim()}>
+                {postingComment ? 'Posting...' : 'Post'}
+              </button>
+            </div>
+          </div>
+
+          {comments.length === 0 ? (
+            <div className="wall-empty">No messages yet. Be the first to write on {person.firstName}'s wall.</div>
+          ) : (
+            <div className="comments-list">
+              {comments.map(c => (
+                <div key={c.id} className="comment-card">
+                  <div className="comment-header">
+                    <div className="comment-author">{c.emoji && <span className="comment-emoji">{c.emoji}</span>}{c.authorName}</div>
+                    <div className="comment-actions-row">
+                      <span className="comment-date">{new Date(c.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <button className="comment-delete" onClick={() => handleDeleteComment(c.id)} title="Delete"><Icons.x size={12} /></button>
+                    </div>
+                  </div>
+                  <div className="comment-content">{c.content}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* STORIES */}
       {tab === 'stories' && (
         <div className="profile-section">
           <h2 className="profile-section-title"><Icons.scroll size={18} /> Stories & Memories</h2>
-          {stories.length === 0 ? (
-            <EmptyState icon="scroll" title="No stories yet" description={`Be the first to share a memory about ${person.firstName}`} />
-          ) : stories.map(s => (
+          {stories.length === 0 ? <EmptyState icon="scroll" title="No stories yet" description={`Share a memory about ${person.firstName}`} /> : stories.map(s => (
             <div key={s.id} className="story-card">
               <div className="story-card-header"><div className="story-card-title">{s.title}</div><span className={`story-card-type ${s.type}`}>{s.type}</span></div>
               <div className="story-card-content">{s.content}</div>
@@ -265,19 +321,14 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
       {tab === 'timeline' && (
         <div className="profile-section">
           <h2 className="profile-section-title"><Icons.timeline size={18} /> Life Events</h2>
-          {sortedEvents.length === 0 ? (
-            <EmptyState icon="timeline" title="No events recorded" description="Birth, marriage, and other life milestones will appear here." />
-          ) : (
+          {sortedEvents.length === 0 ? <EmptyState icon="timeline" title="No events recorded" /> : (
             <div className="timeline-container">
-              {sortedEvents.map(e => (
-                <div key={e.id} className="timeline-item"><div className={`timeline-dot ${e.type}`} /><div className="timeline-year">{e.year}</div><div className="timeline-title">{e.title}</div></div>
-              ))}
+              {sortedEvents.map(e => (<div key={e.id} className="timeline-item"><div className={`timeline-dot ${e.type}`} /><div className="timeline-year">{e.year}</div><div className="timeline-title">{e.title}</div></div>))}
             </div>
           )}
         </div>
       )}
 
-      {/* LIGHTBOX */}
       {lightbox && (
         <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
           <button className="lightbox-close" onClick={() => setLightbox(null)}><Icons.x size={24} /></button>
