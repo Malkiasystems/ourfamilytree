@@ -53,7 +53,10 @@ export default function App() {
         )}
 
         {page === 'tree' && (
-          <FamilyTreePage onSelectPerson={handleSelectPerson} />
+          <FamilyTreePage
+            onSelectPerson={handleSelectPerson}
+            onAddPerson={() => setShowAddPerson(true)}
+          />
         )}
 
         {page === 'people' && (

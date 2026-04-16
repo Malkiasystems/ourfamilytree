@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Icons } from '@/components/Icons';
-import { PEOPLE } from '@/data/mockData';
+import { Icons, LoadingState, EmptyState } from '@/components';
+import { fetchPeople } from '@/data/api';
+import { useAsync } from '@/lib/useAsync';
 import type { Person } from '@/types';
 import './FamilyTreePage.css';
 
 interface FamilyTreePageProps {
   onSelectPerson: (id: string) => void;
+  onAddPerson: () => void;
 }
 
 function TreeNode({ person, onSelect }: { person: Person; onSelect: (id: string) => void }) {
@@ -26,34 +28,59 @@ function TreeNode({ person, onSelect }: { person: Person; onSelect: (id: string)
   );
 }
 
-export function FamilyTreePage({ onSelectPerson }: FamilyTreePageProps) {
+export function FamilyTreePage({ onSelectPerson, onAddPerson }: FamilyTreePageProps) {
   const [zoom, setZoom] = useState(1);
+  const { data: people, loading } = useAsync(fetchPeople, []);
 
   const generations = useMemo(() => {
     const gens: Record<number, Person[]> = {};
-    PEOPLE.forEach(p => {
-      if (!gens[p.generation]) gens[p.generation] = [];
-      gens[p.generation].push(p);
+    people.forEach(p => {
+      const gen = p.generation || 1;
+      if (!gens[gen]) gens[gen] = [];
+      gens[gen].push(p);
     });
     return gens;
-  }, []);
+  }, [people]);
 
   const genLabels: Record<number, string> = {
-    1: 'Founders',
+    1: 'First Generation',
     2: 'Second Generation',
     3: 'Third Generation',
     4: 'Fourth Generation',
+    5: 'Fifth Generation',
+    6: 'Sixth Generation',
   };
+
+  if (loading) {
+    return <div className="section"><LoadingState text="Loading family tree..." /></div>;
+  }
+
+  if (people.length === 0) {
+    return (
+      <div className="section">
+        <EmptyState
+          icon="tree"
+          title="No family members yet"
+          description="Start building your family tree by adding the oldest generation first. The tree will grow as you add more people and their relationships."
+          action={
+            <button className="btn btn-primary" onClick={onAddPerson}>
+              <Icons.plus size={16} /> Add first person
+            </button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="section">
       <div className="section-header">
-        <h2 className="section-title"><Icons.tree size={22} /> The Mwinyi Family Tree</h2>
+        <h2 className="section-title"><Icons.tree size={22} /> Family Tree</h2>
         <span className="section-subtitle">Click any person to view their profile</span>
       </div>
       <div className="tree-container">
         <div className="tree-toolbar">
-          <span className="tree-toolbar-label">Family Tree</span>
+          <span className="tree-toolbar-label">{people.length} members, {Object.keys(generations).length} generations</span>
           <div className="tree-toolbar-group">
             <button className="tree-toolbar-btn" onClick={() => setZoom(z => Math.min(z + 0.15, 1.5))}>
               <Icons.zoomIn size={16} />
@@ -68,7 +95,7 @@ export function FamilyTreePage({ onSelectPerson }: FamilyTreePageProps) {
         </div>
         <div className="tree-canvas">
           <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', transition: 'transform 0.2s ease' }}>
-            {Object.entries(generations).sort(([a], [b]) => Number(a) - Number(b)).map(([gen, people]) => (
+            {Object.entries(generations).sort(([a], [b]) => Number(a) - Number(b)).map(([gen, gpeople], idx, arr) => (
               <div key={gen}>
                 <div className="tree-gen-header">
                   <span className="tree-gen-badge">
@@ -76,13 +103,11 @@ export function FamilyTreePage({ onSelectPerson }: FamilyTreePageProps) {
                   </span>
                 </div>
                 <div className="tree-generation">
-                  {people.map(p => (
+                  {gpeople.map(p => (
                     <TreeNode key={p.id} person={p} onSelect={onSelectPerson} />
                   ))}
                 </div>
-                {Number(gen) < Object.keys(generations).length && (
-                  <div className="tree-connector" />
-                )}
+                {idx < arr.length - 1 && <div className="tree-connector" />}
               </div>
             ))}
           </div>

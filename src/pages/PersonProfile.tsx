@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Icons } from '@/components/Icons';
-import { Avatar } from '@/components/Avatar';
-import { PEOPLE, CLANS, STORIES, EVENTS } from '@/data/mockData';
+import { Icons, Avatar, LoadingState, EmptyState } from '@/components';
+import {
+  fetchPersonById, fetchPeople, fetchClans,
+  fetchStoriesByPerson, fetchEventsByPerson,
+} from '@/data/api';
+import { useAsync } from '@/lib/useAsync';
 import './PersonProfile.css';
 
 interface PersonProfileProps {
@@ -11,19 +14,37 @@ interface PersonProfileProps {
 }
 
 export function PersonProfile({ personId, onNavigate, onBack }: PersonProfileProps) {
-  const person = PEOPLE.find(p => p.id === personId);
   const [tab, setTab] = useState<'bio' | 'relations' | 'stories' | 'timeline'>('bio');
+  const { data: person, loading } = useAsync(() => fetchPersonById(personId), null, [personId]);
+  const { data: allPeople } = useAsync(fetchPeople, []);
+  const { data: clans } = useAsync(fetchClans, []);
+  const { data: stories } = useAsync(() => fetchStoriesByPerson(personId), [], [personId]);
+  const { data: events } = useAsync(() => fetchEventsByPerson(personId), [], [personId]);
 
-  if (!person) return null;
+  if (loading) {
+    return <div className="profile"><LoadingState text="Loading profile..." /></div>;
+  }
 
-  const clan = CLANS.find(c => c.id === person.clanId);
-  const stories = STORIES.filter(s => s.personId === personId);
-  const events = EVENTS.filter(e => e.personId === personId).sort((a, b) => a.year - b.year);
+  if (!person) {
+    return (
+      <div className="profile">
+        <button className="profile-back" onClick={onBack}>
+          <Icons.chevronLeft size={16} /> Back
+        </button>
+        <EmptyState
+          icon="user"
+          title="Person not found"
+          description="This profile could not be loaded. It may have been removed or you may not have permission to view it."
+        />
+      </div>
+    );
+  }
 
-  const parents = PEOPLE.filter(p => person.parentIds.includes(p.id));
-  const spouses = PEOPLE.filter(p => person.spouseIds.includes(p.id));
-  const children = PEOPLE.filter(p => person.childIds.includes(p.id));
-  const siblings = PEOPLE.filter(p =>
+  const clan = clans.find(c => c.id === person.clanId);
+  const parents = allPeople.filter(p => person.parentIds.includes(p.id));
+  const spouses = allPeople.filter(p => person.spouseIds.includes(p.id));
+  const children = allPeople.filter(p => person.childIds.includes(p.id));
+  const siblings = allPeople.filter(p =>
     p.id !== person.id &&
     p.parentIds.some(pid => person.parentIds.includes(pid))
   );
@@ -42,6 +63,9 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
     { label: 'Siblings', items: siblings },
   ];
 
+  const sortedEvents = [...events].sort((a, b) => a.year - b.year);
+  const hasRelations = allRelations.length > 0;
+
   return (
     <div className="profile">
       <button className="profile-back" onClick={onBack}>
@@ -58,10 +82,12 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
               {person.gender === 'male' ? <Icons.male size={14} /> : <Icons.female size={14} />}
               {person.gender === 'male' ? 'Male' : 'Female'}
             </span>
-            <span className="profile-meta-item">
-              <Icons.calendar size={14} />
-              {person.birthYear}{person.deathYear ? ` \u2013 ${person.deathYear}` : ' \u2013 Present'}
-            </span>
+            {person.birthYear && (
+              <span className="profile-meta-item">
+                <Icons.calendar size={14} />
+                {person.birthYear}{person.deathYear ? ` \u2013 ${person.deathYear}` : ' \u2013 Present'}
+              </span>
+            )}
             {person.birthPlace && (
               <span className="profile-meta-item">
                 <Icons.mapPin size={14} /> {person.birthPlace}
@@ -88,7 +114,11 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
         <>
           <div className="profile-section">
             <h2 className="profile-section-title"><Icons.book size={18} /> Biography</h2>
-            <p className="profile-bio">{person.bio}</p>
+            {person.bio ? (
+              <p className="profile-bio">{person.bio}</p>
+            ) : (
+              <p className="profile-bio-empty">No biography has been added yet.</p>
+            )}
           </div>
           {person.achievements && person.achievements.length > 0 && (
             <div className="profile-section">
@@ -103,44 +133,54 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
               </ul>
             </div>
           )}
-          <div className="profile-section">
-            <h2 className="profile-section-title"><Icons.users size={18} /> Family</h2>
-            <div className="profile-relations">
-              {allRelations.map(r => (
-                <div key={r.id} className="profile-relation-card" onClick={() => onNavigate(r.id)}>
-                  <Avatar person={r} size={32} className="profile-relation-avatar" />
-                  <div>
-                    <div className="profile-relation-name">{r.firstName}</div>
-                    <div className="profile-relation-type">{r.relType}</div>
+          {hasRelations && (
+            <div className="profile-section">
+              <h2 className="profile-section-title"><Icons.users size={18} /> Family</h2>
+              <div className="profile-relations">
+                {allRelations.map(r => (
+                  <div key={r.id} className="profile-relation-card" onClick={() => onNavigate(r.id)}>
+                    <Avatar person={r} size={32} className="profile-relation-avatar" />
+                    <div>
+                      <div className="profile-relation-name">{r.firstName}</div>
+                      <div className="profile-relation-type">{r.relType}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
 
       {tab === 'relations' && (
         <div className="profile-section">
           <h2 className="profile-section-title"><Icons.link size={18} /> All Relationships</h2>
-          {relationGroups.map(group => group.items.length > 0 && (
-            <div key={group.label} className="profile-relation-group">
-              <div className="profile-relation-group-label">{group.label}</div>
-              <div className="profile-relations">
-                {group.items.map(r => (
-                  <div key={r.id} className="profile-relation-card" onClick={() => onNavigate(r.id)}>
-                    <Avatar person={r} size={32} className="profile-relation-avatar" />
-                    <div>
-                      <div className="profile-relation-name">{r.firstName} {r.lastName}</div>
-                      <div className="profile-relation-type">
-                        {r.birthYear}{r.deathYear ? `\u2013${r.deathYear}` : ''}
+          {!hasRelations ? (
+            <EmptyState
+              icon="link"
+              title="No relationships recorded"
+              description="Connect this person to parents, spouses, children, or siblings to build their family network."
+            />
+          ) : (
+            relationGroups.map(group => group.items.length > 0 && (
+              <div key={group.label} className="profile-relation-group">
+                <div className="profile-relation-group-label">{group.label}</div>
+                <div className="profile-relations">
+                  {group.items.map(r => (
+                    <div key={r.id} className="profile-relation-card" onClick={() => onNavigate(r.id)}>
+                      <Avatar person={r} size={32} className="profile-relation-avatar" />
+                      <div>
+                        <div className="profile-relation-name">{r.firstName} {r.lastName}</div>
+                        <div className="profile-relation-type">
+                          {r.birthYear}{r.deathYear ? `\u2013${r.deathYear}` : ''}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
@@ -148,11 +188,11 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
         <div className="profile-section">
           <h2 className="profile-section-title"><Icons.scroll size={18} /> Stories & Memories</h2>
           {stories.length === 0 ? (
-            <div className="empty-state">
-              <Icons.scroll size={40} />
-              <div className="empty-state-text">No stories yet</div>
-              <div className="empty-state-sub">Be the first to share a memory about {person.firstName}</div>
-            </div>
+            <EmptyState
+              icon="scroll"
+              title="No stories yet"
+              description={`Be the first to share a memory about ${person.firstName}`}
+            />
           ) : stories.map(s => (
             <div key={s.id} className="story-card">
               <div className="story-card-header">
@@ -172,14 +212,15 @@ export function PersonProfile({ personId, onNavigate, onBack }: PersonProfilePro
       {tab === 'timeline' && (
         <div className="profile-section">
           <h2 className="profile-section-title"><Icons.timeline size={18} /> Life Events</h2>
-          {events.length === 0 ? (
-            <div className="empty-state">
-              <Icons.timeline size={40} />
-              <div className="empty-state-text">No events recorded</div>
-            </div>
+          {sortedEvents.length === 0 ? (
+            <EmptyState
+              icon="timeline"
+              title="No events recorded"
+              description="Birth, marriage, and other life milestones will appear here."
+            />
           ) : (
             <div className="timeline-container">
-              {events.map(e => (
+              {sortedEvents.map(e => (
                 <div key={e.id} className="timeline-item">
                   <div className={`timeline-dot ${e.type}`} />
                   <div className="timeline-year">{e.year}</div>

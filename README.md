@@ -83,20 +83,29 @@ koo-heritage/
 git clone https://github.com/your-username/koo-heritage.git
 cd koo-heritage
 npm install
+```
+
+### Database Setup (required before first run)
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. In your Supabase project, go to the SQL Editor
+3. Copy the contents of `docs/schema.sql` and run it to create all tables
+4. Copy `.env.example` to `.env.local` and fill in your Supabase credentials:
+
+```bash
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+Find these values in your Supabase dashboard under Settings > API.
+
+### Run locally
+
+```bash
 npm run dev
 ```
 
-### Database Setup
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Run `docs/schema.sql` in the Supabase SQL editor
-3. Set up storage buckets for media
-4. Add your Supabase URL and anon key to environment variables:
-
-```bash
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
+The app opens at `http://localhost:3000`. If Supabase is not yet configured, you'll see empty states prompting you to add your first family member.
 
 ### Deploy
 

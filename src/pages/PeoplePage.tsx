@@ -1,7 +1,7 @@
 import React from 'react';
-import { Icons } from '@/components/Icons';
-import { Avatar } from '@/components/Avatar';
-import { PEOPLE, CLANS } from '@/data/mockData';
+import { Icons, Avatar, LoadingState, EmptyState } from '@/components';
+import { fetchPeople } from '@/data/api';
+import { useAsync } from '@/lib/useAsync';
 import './PeoplePage.css';
 
 interface PeoplePageProps {
@@ -10,6 +10,12 @@ interface PeoplePageProps {
 }
 
 export function PeoplePage({ onSelectPerson, onAddPerson }: PeoplePageProps) {
+  const { data: people, loading } = useAsync(fetchPeople, []);
+
+  if (loading) {
+    return <div className="section"><LoadingState text="Loading people..." /></div>;
+  }
+
   return (
     <div className="section">
       <div className="section-header">
@@ -18,18 +24,31 @@ export function PeoplePage({ onSelectPerson, onAddPerson }: PeoplePageProps) {
           <Icons.plus size={14} /> Add Person
         </button>
       </div>
-      <div className="people-grid">
-        {PEOPLE.map(p => (
-          <div key={p.id} className="person-card" onClick={() => onSelectPerson(p.id)}>
-            <Avatar person={p} size={64} className="person-card-avatar" />
-            <div className="person-card-name">{p.firstName} {p.lastName}</div>
-            <div className="person-card-years">
-              {p.birthYear}{p.deathYear ? ` \u2013 ${p.deathYear}` : ' \u2013 Present'}
+      {people.length === 0 ? (
+        <EmptyState
+          icon="users"
+          title="No people yet"
+          description="Add family members to start building your heritage archive."
+          action={
+            <button className="btn btn-primary" onClick={onAddPerson}>
+              <Icons.plus size={16} /> Add first person
+            </button>
+          }
+        />
+      ) : (
+        <div className="people-grid">
+          {people.map(p => (
+            <div key={p.id} className="person-card" onClick={() => onSelectPerson(p.id)}>
+              <Avatar person={p} size={64} className="person-card-avatar" />
+              <div className="person-card-name">{p.firstName} {p.lastName}</div>
+              <div className="person-card-years">
+                {p.birthYear}{p.deathYear ? ` \u2013 ${p.deathYear}` : p.birthYear ? ' \u2013 Present' : ''}
+              </div>
+              {p.occupation && <div className="person-card-role">{p.occupation}</div>}
             </div>
-            <div className="person-card-role">{p.occupation}</div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
